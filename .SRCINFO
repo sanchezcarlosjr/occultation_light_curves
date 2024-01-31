@@ -1,0 +1,14 @@
+pkgbase = slc-bin
+	pkgdesc = Precompiled TAOS II event simulator for astronomical occultation events
+	pkgver = 2.3.0
+	pkgrel = 1
+	url = https://github.com/sanchezcarlosjr/occultation_light_curves
+	arch = x86_64
+	license = MIT
+	depends = fftw
+	depends = gsl
+	depends = hdf5
+	source_x86_64 = https://github.com/sanchezcarlosjr/occultation_light_curves/releases/download/v2.3.0/slc
+	sha256sums_x86_64 = 7b3ef89fdc5f6cc27e6d974efb186577a951d1c39a2d0a236cc11b2ab679f995
+
+pkgname = slc-bin
