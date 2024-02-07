@@ -5,9 +5,10 @@
 #include "diffraction.h"
 #include "numpy.h"
 #include <math.h>
-#include<unistd.h>
+#include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 // Function to convert Cartesian coordinates to Polar coordinates
 void cart2pol(double x, double y, double *phi, double *rho) {
@@ -110,6 +111,9 @@ double** trasladar(double** P, int M, int smx, int smy) {
 }
 
 
+// Square Matrix size in pixels
+// tamaño de matriz en metros
+// oscurecimiento central en metros como si fuera circular
 double** pupil_doble(int M, double D, double d) {
     double r1 = (d / 2) * 0.65;
     double r2 = sqrt(pow(d / 2, 2) - pow(r1, 2));
@@ -198,3 +202,81 @@ double** pupilSO(int M, double D, double d) {
     return P;
 }
 
+double SNR_TAOS2(double mV) {
+    // Polynomial coefficients
+    double p1 = 1.5792;
+    double p2 = -57.045;
+    double p3 = 515.04;
+
+    // Polynomial calculation for SNR
+    double SNR = p1*mV*mV + p2*mV + p3;
+
+    return SNR;
+}
+
+double** createSquareAperture(int M, double D, double d) {
+    int t = (int)(M * d / D);  // Calculate the size of the aperture in pixels
+    int c = M / 2;  // Center of the matrix
+    int start = c - t / 2;
+    int end = c + t / 2;
+
+    // Allocate memory for the 2D array
+    double** P = zeros(M, M);
+
+    // Set the values within the square aperture to 1
+    for (int i = start; i < end; i++) {
+        for (int j = start; j < end; j++) {
+            P[i][j] = 1.0;
+        }
+    }
+
+    return P;
+}
+
+void fresnel () {
+
+}
+
+typedef struct {
+    char tipo[10];  // Spectral type
+    double T;       // Temperature
+    double M;       // Absolute magnitude
+    double L;       // Luminosity relative to the Sun
+} Star;
+
+void calc_rstar(double mV, int nEst, double ua, Star stars[], int numStars, char *tipo, double *R_star) {
+    // Constants
+    double ua_meters = 1.496e11 * ua;  // Distance in meters
+    double Tsol = 5780;                // Solar temperature in Kelvin
+    double Rsol = 6.96e8;              // Solar radius in meters
+
+    if (nEst < 1 || nEst > numStars) {
+        printf("Invalid star number.\n");
+        return;
+    }
+
+    // Select the star
+    Star star = stars[nEst - 1];
+
+    // Calculations
+    double d1 = pow(10, (mV - star.M + 5) / 5);
+    double d = 3.085e16 * d1;  // Convert from parsecs to meters
+    double Rst = sqrt(star.L) / pow(star.T / Tsol, 2);  // Star radius in Rsol
+    double alfa = (Rsol * Rst) / d;  // Angular size of the star in radians
+    *R_star = alfa * ua_meters;  // Size of the star in meters
+
+    // Copy spectral type to output
+    snprintf(tipo, 10, "%s", star.tipo);
+}
+
+void calculateResolutionSteps(double R_star, double plano, int M, double d, double **reso, int *resoSize) {
+    double star_px = (R_star / plano) * M;
+    double obj_px = (d / 4.0 / plano) * M;
+    double div = ceil(star_px / obj_px);
+    double rr = star_px / div;
+
+    arange(rr, star_px+0.0001, rr);
+
+}
+
+// TODO: data writer

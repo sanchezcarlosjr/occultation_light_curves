@@ -3,6 +3,7 @@
 //
 
 #include "spectra.h"
+#include <stdlib.h>
 
 char* read() {
     char *buf;
