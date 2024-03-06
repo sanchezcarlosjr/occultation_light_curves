@@ -13,4 +13,7 @@ set(LIBRARY_NAME occultation_simulator)
 
 add_subdirectory(occultation_simulator)
 add_subdirectory(cli)
+
+include(CTest)
+add_subdirectory(external)
 add_subdirectory(tests)

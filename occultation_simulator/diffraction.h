@@ -6,5 +6,6 @@
 #define OCCULTATION_LIGHT_CURVES_DIFFRACTION_H
 
 double SNR_TAOS2(double mV);
+double calcPlano(double d, double lmda, double ua);
 
 #endif //OCCULTATION_LIGHT_CURVES_DIFFRACTION_H
