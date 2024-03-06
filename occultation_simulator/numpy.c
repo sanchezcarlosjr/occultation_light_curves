@@ -5,6 +5,26 @@
 #include "numpy.h"
 #include <gsl/gsl_matrix.h>
 
+int gsl_matrix_equal_with_tolerance(const gsl_matrix* matrixA, const gsl_matrix* matrixB, double tolerance) {
+    if (matrixA->size1 != matrixB->size1 || matrixA->size2 != matrixB->size2) {
+        // Matrices have different dimensions
+        return 0;
+    }
+
+    for (size_t i = 0; i < matrixA->size1; ++i) {
+        for (size_t j = 0; j < matrixA->size2; ++j) {
+            double diff = fabs(gsl_matrix_get(matrixA, i, j) - gsl_matrix_get(matrixB, i, j));
+            if (diff > tolerance) {
+                // Elements differ by more than the specified tolerance
+                return 0;
+            }
+        }
+    }
+
+    // All elements are equal within the specified tolerance
+    return 1;
+}
+
 gsl_matrix* gsl_zeros(int rows, int cols) {
     // Allocate a matrix of size rows x cols
     gsl_matrix* m = gsl_matrix_alloc(rows, cols);

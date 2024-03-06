@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.27)
-add_executable(suite_1_app hello_test.c)
+add_executable(suite_1_app simulator_test.c)
 
 target_link_libraries(suite_1_app ${LIBRARY_NAME} Unity)
 

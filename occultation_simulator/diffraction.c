@@ -5,7 +5,6 @@
 #include "diffraction.h"
 #include "numpy.h"
 #include <string.h>
-#include <gsl/gsl_matrix.h>
 
 #include <libgen.h> // For dirname function
 typedef double complex** DiffractionPattern;
@@ -17,7 +16,14 @@ void getLibDir(char *libdir, const char *filepath) {
     strcpy(libdir, dir); // Copy the directory path back into libdir
 }
 
-// Function to convert Cartesian coordinates to Polar coordinates
+/**
+ * Convert Cartesian coordinates to polar coordinates.
+ *
+ * @param x The x-coordinate.
+ * @param y The y-coordinate.
+ * @param phi Pointer to the angle variable to be set.
+ * @param rho Pointer to the radius variable to be set.
+ */
 void cart2pol(double x, double y, double *phi, double *rho) {
     *rho = sqrt(x * x + y * y);  // Calculate the radius
     *phi = atan2(y, x);          // Calculate the angle in radians
@@ -28,34 +34,35 @@ void pol2cart(double rho, double phi, double *x, double *y) {
     *y = rho * sin(phi);  // Calculate the y coordinate
 }
 
-void pupilCO(int M, double D, double d, double **P) {
-    double *m = malloc(M * sizeof(double));
-    linspace(m, -D / 2, D / 2, M);
 
-    double **a = malloc(M * sizeof(double *));
-    double **b = malloc(M * sizeof(double *));
+/**
+ * Generate a circular obstruction.
+ *
+ * @param M The size of the matrix in pixels.
+ * @param D The size of the matrix in meters.
+ * @param d The central dimming in meters.
+ */
+gsl_matrix *pupilCO(int M, double D, double d) {
+    gsl_matrix *P = gsl_matrix_alloc(M, M);
+    gsl_vector *m = gsl_vector_alloc(M);
+
+    // Populate the vector m with linearly spaced values
     for (int i = 0; i < M; i++) {
-        a[i] = malloc(M * sizeof(double));
-        b[i] = malloc(M * sizeof(double));
+        gsl_vector_set(m, i, -D / 2 + i * D / (M - 1));
     }
-
-    meshgrid(m, m, M, a, b);
 
     double phi, rho;
     for (int i = 0; i < M; i++) {
         for (int j = 0; j < M; j++) {
-            cart2pol(a[i][j], b[i][j], &phi, &rho);
-            P[i][j] = (rho >= d / 2) ? 1.0 : 0.0;
+            double x = gsl_vector_get(m, i);
+            double y = gsl_vector_get(m, j);
+            cart2pol(x, y, &phi, &rho);
+            gsl_matrix_set(P, i, j, (rho >= d / 2) ? 1.0 : 0.0);
         }
     }
 
-    for (int i = 0; i < M; i++) {
-        free(a[i]);
-        free(b[i]);
-    }
-    free(a);
-    free(b);
-    free(m);
+    gsl_vector_free(m);
+    return P;
 }
 
 
