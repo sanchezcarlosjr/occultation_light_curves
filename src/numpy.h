@@ -9,11 +9,13 @@ typedef struct {
     double* array;
 } Array;
 
+typedef double** Matrix;
+
 void linspace(double *arr, double start, double end, int n);
 void meshgrid(double *x, double *y, int n, double **X, double **Y);
-double** zeros(int rows, int cols);
-double** full(int rows, int cols, int value);
-double** ones(int rows, int cols);
+Matrix zeros(int rows, int cols);
+Matrix full(int rows, int cols, int value);
+Matrix ones(int rows, int cols);
 void freeMatrix(double** matrix, int rows);
 Array arange(int start, int stop, int step);
 
