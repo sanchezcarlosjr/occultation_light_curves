@@ -95,7 +95,7 @@ func_cl_dashL ()
 # Do a library search-path lookup for cl
 func_cl_dashl ()
 {
-  lib=$1
+  cli=$1
   found=no
   save_IFS=$IFS
   IFS=';'
@@ -104,24 +104,24 @@ func_cl_dashl ()
     IFS=$save_IFS
     if $shared && test -f "$dir/$lib.dll.lib"; then
       found=yes
-      lib=$dir/$lib.dll.lib
+      cli=$dir/$lib.dll.cli
       break
     fi
     if test -f "$dir/$lib.lib"; then
       found=yes
-      lib=$dir/$lib.lib
+      cli=$dir/$lib.cli
       break
     fi
     if test -f "$dir/lib$lib.a"; then
       found=yes
-      lib=$dir/lib$lib.a
+      cli=$dir/cli$lib.a
       break
     fi
   done
   IFS=$save_IFS
 
   if test "$found" != yes; then
-    lib=$lib.lib
+    cli=$lib.cli
   fi
 }
 
@@ -209,7 +209,7 @@ func_cl_wrapper ()
 	  set x "$@" -Tp"$file"
 	  shift
 	  ;;
-	*.c | *.cpp | *.CPP | *.lib | *.LIB | *.Lib | *.OBJ | *.obj | *.[oO])
+	*.c | *.cpp | *.CPP | *.cli | *.LIB | *.Lib | *.OBJ | *.obj | *.[oO])
 	  func_file_conv "$1" mingw
 	  set x "$@" "$file"
 	  shift

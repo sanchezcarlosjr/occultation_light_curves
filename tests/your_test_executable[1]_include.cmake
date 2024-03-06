@@ -1,5 +1,0 @@
-if(EXISTS "/home/cest/Workspace/occultation-light-curves/tests/your_test_executable[1]_tests.cmake")
-  include("/home/cest/Workspace/occultation-light-curves/tests/your_test_executable[1]_tests.cmake")
-else()
-  add_test(your_test_executable_NOT_BUILT your_test_executable_NOT_BUILT)
-endif()

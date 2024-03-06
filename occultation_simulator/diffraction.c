@@ -5,7 +5,7 @@
 #include "diffraction.h"
 #include "numpy.h"
 #include <string.h>
-
+#include <gsl/gsl_matrix.h>
 
 #include <libgen.h> // For dirname function
 typedef double complex** DiffractionPattern;
