@@ -8,7 +8,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 add_executable(occultation_light_curves src/main.c src/numpy.c src/numpy.h src/diffraction.c src/diffraction.h
         src/spectra.c
-        src/spectra.h)
+        src/spectra.h
+        src/cmdline.c
+        src/cmdline.h
+)
 
 find_package(GSL REQUIRED)
 find_package(FFTW3 REQUIRED COMPONENTS DOUBLE_LIB)

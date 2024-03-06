@@ -1,0 +1,6 @@
+package "TAOS Occultation Light Curves Simulator"
+version "1.0"
+purpose "Simulate Occultation Light Curves for TAOS II."
+
+option "verbose" v "Produce verbose output" flag off
+option "output" o "Specify output file" string required

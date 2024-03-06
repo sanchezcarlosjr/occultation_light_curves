@@ -4,15 +4,7 @@
 
 #include "diffraction.h"
 #include "numpy.h"
-#include <math.h>
-#include <unistd.h>
 #include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <complex.h>
-#include <fftw3.h>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
 
 
 #include <libgen.h> // For dirname function
@@ -66,67 +58,6 @@ void pupilCO(int M, double D, double d, double **P) {
     free(m);
 }
 
-double **allocate2DArray(int rows, int cols) {
-    double **array = (double **) malloc(rows * sizeof(double *));
-    if (!array) return NULL;
-
-    for (int i = 0; i < rows; i++) {
-        array[i] = (double *) malloc(cols * sizeof(double));
-        if (!array[i]) {
-            // Free previously allocated memory in case of failure
-            for (int j = 0; j < i; j++) free(array[j]);
-            free(array);
-            return NULL;
-        }
-    }
-    return array;
-}
-
-// Function to free a dynamically allocated 2D array
-void free2DArray(double **array, int rows) {
-    for (int i = 0; i < rows; i++) free(array[i]);
-    free(array);
-}
-
-// Function to initialize a 2D array with zeros
-void zeros2(double **array, int rows, int cols) {
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            array[i][j] = 0.0;
-        }
-    }
-}
-
-double complex **allocateComplex2DArray(int rows, int cols) {
-    double complex **array = (double complex **) malloc(rows * sizeof(double complex *));
-    if (!array) return NULL;
-
-    for (int i = 0; i < rows; i++) {
-        array[i] = (double complex *) malloc(cols * sizeof(double complex));
-        if (!array[i]) {
-            // Free previously allocated memory in case of failure
-            for (int j = 0; j < i; j++) free(array[j]);
-            free(array);
-            return NULL;
-        }
-    }
-    return array;
-}
-
-// Function to initialize a 2D array of complex numbers with zeros
-void zerosComplex(double complex **array, int rows, int cols) {
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            array[i][j] = 0.0 + 0.0 * I; // Initialize to complex zero
-        }
-    }
-}
-
-// Function to free a dynamically allocated 2D array of complex numbers
-void freeComplex2DArray(double complex **array, int rows) {
-    for (int i = 0; i < rows; i++) free(array[i]);
-    free(array);
-}
 
 // The function will allocate memory for the output matrix, perform the translation, and then return the translated matrix.
 double complex **translate(DiffractionPattern P, int dx, int dy, int smx, int smy) {
@@ -162,21 +93,11 @@ double complex **translate(DiffractionPattern P, int dx, int dy, int smx, int sm
 }
 
 // Square Matrix size in pixels
-// tamaño de matriz en metros
-// oscurecimiento central en metros como si fuera circular
-double **pupil_doble(int M, double D, double d) {
-    double r1 = (d / 2) * 0.65;
-    double r2 = sqrt(pow(d / 2, 2) - pow(r1, 2));
-    double d1 = r1 * 2;
-    double d2 = r2 * 2;
-    double Dx = 0.45 * d1 + 0.45 * d2;
-    double Dy = 0;
-    // TODO: An extra argument custom sep
-    int sepX = (int) ((Dx / 2) / D * M);
-    int sepY = (int) ((Dy / 2) / D * M);
-
-    double complex **P1 = allocateComplex2DArray(M, M);
-    double complex **P2 = allocateComplex2DArray(M, M);
+// Matrix size in meters
+// Central dimming in meters as if it were circular
+ComplexMatrix dynamicPupilDoble(int M, double D, double d, int sepX, int sepY, double r1, double r2) {
+    ComplexMatrix P1 = allocateComplex2DArray(M, M);
+    ComplexMatrix P2 = allocateComplex2DArray(M, M);
     zerosComplex(P1, M, M);
     zerosComplex(P2, M, M);
 
@@ -194,9 +115,10 @@ double **pupil_doble(int M, double D, double d) {
     }
 
     // Translate and combine obstructions
-    double complex **translatedP1 = translate(P1, M, M, -sepX, sepY);
-    double complex **translatedP2 = translate(P2, M, M, sepX, sepY);
-    double **P = zeros(M, M);
+    ComplexMatrix translatedP1 = translate(P1, M, M, -sepX, sepY);
+    ComplexMatrix translatedP2 = translate(P2, M, M, sepX, sepY);
+    ComplexMatrix P = allocateComplex2DArray(M, M);
+    zerosComplex(P, M, M);
 
     for (int i = 0; i < M; i++) {
         for (int j = 0; j < M; j++) {
@@ -213,11 +135,26 @@ double **pupil_doble(int M, double D, double d) {
     return P;
 }
 
+ComplexMatrix pupilDobleWithCustomSeparator(int M, double D, double d, int sepX, int sepY) {
+    double r1 = (d / 2) * 0.65;
+    double r2 = sqrt(pow(d / 2, 2) - pow(r1, 2));
+    double d1 = r1 * 2;
+    double d2 = r2 * 2;
+    double Dx = 0.45 * d1 + 0.45 * d2;
+    double Dy = 0;
+    return dynamicPupilDoble(M,D, d, (int) ((Dx / 2) / D * M) + sepX, (int) ((Dy / 2) / D * M) + sepY, r1, r2);
+}
+
+ComplexMatrix pupilDoble(int M, double D, double d) {
+    return pupilDobleWithCustomSeparator(M, D, d, 0, 0);
+}
+
 
 // Function to generate a circular aperture
 // TODO: Ellipse
-double **pupilCA(int M, double D, double d) {
-    double **P = zeros(M, M);
+ComplexMatrix pupilCA(int M, double D, double d) {
+    ComplexMatrix P = allocateComplex2DArray(M, M);
+    zerosComplex(P, M, M);
     double step = D / M;
     double phi, rho;
 
@@ -256,7 +193,7 @@ double **pupilSO(int M, double D, double d) {
 }
 
 
-void pupilSA(Matrix P, int M, double D, double d) {
+void pupilSA(ComplexMatrix P, int M, double D, double d) {
     int t = M * d / D; // Calculate the size of the central obscuration in pixels
     int c = M / 2;     // Center of the array
 
