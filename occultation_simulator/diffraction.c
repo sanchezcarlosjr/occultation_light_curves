@@ -465,6 +465,16 @@ void extraerPerfil(double **I0, int M, double D, double T, double b, double *x, 
     }
 }
 
+/**
+ * Function to calculate the optimal plane size (for both the object and diffraction) for small objects (<10km),
+ * avoiding the FFT scaling issue.
+ *
+ * @param d Diameter of the object in meters.
+ * @param lmda Wavelength in meters.
+ * @param ua Distance of the object in Astronomical Units (AU).
+ *
+ * @return Plane size in meters (one dimension).
+ */
 double calcPlano(double d, double lmda, double ua) {
     const double AU_TO_METERS = 1.496e11; // Conversion factor from AU to meters
     double z = ua * AU_TO_METERS; // Distance in meters
