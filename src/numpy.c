@@ -3,9 +3,8 @@
 //
 
 #include "numpy.h"
-#include <stdlib.h>
-#include <math.h>
-#include <stdio.h>
+
+
 
 void linspace(double *arr, double start, double end, int n) {
     double step = (end - start) / (n - 1);
@@ -63,6 +62,38 @@ Array arange(int start, int stop, int step) {
     return array;
 }
 
+
+// Function to initialize a 2D array of complex numbers with zeros
+void zerosComplex(ComplexMatrix array, int rows, int cols) {
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            array[i][j] = 0.0 + 0.0 * I; // Initialize to complex zero
+        }
+    }
+}
+
+ComplexMatrix allocateComplex2DArray(int rows, int cols) {
+    ComplexMatrix array = (ComplexMatrix) malloc(rows * sizeof(double complex *));
+    if (!array) return NULL;
+
+    for (int i = 0; i < rows; i++) {
+        array[i] = (double complex *) malloc(cols * sizeof(double complex));
+        if (!array[i]) {
+            // Free previously allocated memory in case of failure
+            for (int j = 0; j < i; j++) free(array[j]);
+            free(array);
+            return NULL;
+        }
+    }
+    return array;
+}
+
+// Function to free a dynamically allocated 2D array of complex numbers
+void freeComplex2DArray(ComplexMatrix array, int rows) {
+    for (int i = 0; i < rows; i++) free(array[i]);
+    free(array);
+}
+
 typedef int (*MathFunc)(float, int);
 
 int do_math(float arg1, int arg2) {
@@ -74,13 +105,3 @@ int call_a_func(MathFunc call_this) {
 
     return output;
 }
-
-#define q	3		/* for 2^3 points */
-#define N	(1<<q)		/* N-point FFT, iFFT */
-
-typedef float real;
-typedef struct{real Re; real Im;} complex;
-
-#ifndef PI
-# define PI	3.14159265358979323846264338327950288
-#endif
