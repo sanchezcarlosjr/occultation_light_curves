@@ -23,7 +23,7 @@ void meshgrid(double *x, double *y, int n, double **X, double **Y) {
     }
 }
 
-double** zeros(int rows, int cols) {
+Matrix zeros(int rows, int cols) {
     double** matrix = (double**) malloc(rows * sizeof(double*));
     for (int i = 0; i < rows; i++) {
         matrix[i] = (double*) calloc(cols, sizeof(double));  // Use calloc to initialize to 0
@@ -31,7 +31,7 @@ double** zeros(int rows, int cols) {
     return matrix;
 }
 
-double** full(int rows, int cols, int value) {
+Matrix full(int rows, int cols, int value) {
     double** matrix = (double**) malloc(rows * sizeof(double*));
     for (int i = 0; i < rows; i++) {
         matrix[i] = (double*)malloc(cols * sizeof(double));
@@ -42,11 +42,11 @@ double** full(int rows, int cols, int value) {
     return matrix;
 }
 
-double** ones(int rows, int cols) {
+Matrix ones(int rows, int cols) {
     return full(rows, cols, 1);
 }
 
-void freeMatrix(double** matrix, int rows) {
+void freeMatrix(Matrix matrix, int rows) {
     for (int i = 0; i < rows; i++) {
         free(matrix[i]);
     }
