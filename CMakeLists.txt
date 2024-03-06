@@ -10,10 +10,11 @@ add_executable(occultation_light_curves src/main.c src/numpy.c src/numpy.h src/d
         src/spectra.c
         src/spectra.h)
 
-
+find_package(GSL REQUIRED)
 find_package(FFTW3 REQUIRED COMPONENTS DOUBLE_LIB)
 
 # Include FFTW headers
 include_directories(${FFTW3_INCLUDE_DIRS})
+include_directories(${GSL_INCLUDE_DIRS})
 
-target_link_libraries(occultation_light_curves m ${FFTW3_LIBRARIES})
+target_link_libraries(occultation_light_curves m ${FFTW3_LIBRARIES} ${GSL_LIBRARIES})
