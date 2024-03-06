@@ -589,24 +589,101 @@ void addNoise(DiffractionPattern diffractionPattern, int M, double mV) {
     gsl_rng_free(GSLRandomNumberGenerator); // Free the GSL random number generator
 }
 
-double **createSquareAperture(int M, double D, double d) {
-    int t = (int) (M * d / D);  // Calculate the size of the aperture in pixels
-    int c = M / 2;  // Center of the matrix
-    int start = c - t / 2;
-    int end = c + t / 2;
+/*
+ * Function to sample the diffraction profile by obtaining the average point
+lc --> diffraction profile or light curve
+D --> size of the plane in meters
+vr --> object velocity ~5000 m/s (positive if it goes against Earth's velocity)
+fps --> frames per second of the camera, 20 for TAOS-2
+toff --> Time offset within the sampling period
+vE --> translational velocity of the Earth == 29800 m/s
+opangle --> angle from the object's opposition: O, S, E
+ua --> Distance of the object in Astronomical Units
+OUT --> s_lin, lc_lin, s_pun, lc_pun: time vectors for lines, sample in lines, time at points, and sample at points, RESPECTIVELY
+ */
+void sampling(double *lc, int tam, double D, double vr, double fps, double toff, double vE, double opangle, double ua,
+              double **s_lin, double **lc_lin, double **s_pun, double **lc_pun, int *size_s_lin, int *size_lc_lin, int *size_s_pun, int *size_lc_pun) {
+    double T = 1 / fps;  // Exposure time
+    double OA = opangle * M_PI / 180;  // Opposition angle in radians
 
-    // Allocate memory for the 2D array
-    double **P = zeros(M, M);
+    // Tangential velocity of the object relative to Earth
+    double Vt = vE * (cos(OA) - sqrt((1 / ua) * (1 - (1 / (ua * ua)) * sin(OA) * sin(OA)))) + vr;
 
-    // Set the values within the square aperture to 1
-    for (int i = start; i < end; i++) {
-        for (int j = start; j < end; j++) {
-            P[i][j] = 1.0;
-        }
+    double t = D / Vt;  // Visibility of the plane in seconds
+    int Nm = (int)(t / T);  // Total number of samples in the observation plane
+    int dpix = tam / Nm;
+    int pixoffset = (int)(toff * fps);  // Convert time offset to pixel offset
+
+    // Allocate memory for output arrays
+    *size_s_lin = tam;  // Adjust the size according to your sampling
+    *size_lc_lin = tam;
+    *size_s_pun = Nm;  // Adjust the size according to your sampling
+    *size_lc_pun = Nm;
+    *s_lin = (double *)malloc(*size_s_lin * sizeof(double));
+    *lc_lin = (double *)malloc(*size_lc_lin * sizeof(double));
+    *s_pun = (double *)malloc(*size_s_pun * sizeof(double));
+    *lc_pun = (double *)malloc(*size_lc_pun * sizeof(double));
+
+    // Sample the diffraction profile
+    // Assuming the sampling logic is implemented similar to the Python version
+    // You need to translate the logic of sampling `lc` into `lc_lin` and `lc_pun` here
+
+    // Fill the time vectors `s_lin` and `s_pun`
+    for (int i = 0; i < *size_s_lin; i++) {
+        (*s_lin)[i] = -t / 2 + i * (t / (*size_s_lin - 1));
     }
-
-    return P;
+    for (int i = 0; i < *size_s_pun; i++) {
+        (*s_pun)[i] = -t / 2 + i * (t / (*size_s_pun - 1));
+    }
 }
 
 
+// Function to find peaks in the light curve using the derivative method
+// x, y: Arrays containing the occultation data (distance and amplitude)
+// n: Number of elements in the x and y arrays
+// D: Diameter of the object in meters
+// fil: Threshold value for identifying peaks, default is 0.005
+// peaks: Array to store the indices of the peaks
+// peakValues: Array to store the values of the peaks
+// Returns the number of peaks found
+int searchPeaks(double *x, double *y, int n, double D, double fil, int **peaks, double **peakValues) {
+    double *yp = (double *)malloc((n - 1) * sizeof(double));  // Array for the derivative of y
+    int *tempPeaks = (int *)malloc(n * sizeof(int));          // Temporary array for peak indices
+    double *tempPeakValues = (double *)malloc(n * sizeof(double));  // Temporary array for peak values
+    int count = 0;  // Counter for the number of peaks
 
+    // Calculate the derivative of y
+    for (int i = 0; i < n - 1; i++) {
+        yp[i] = y[i + 1] - y[i];
+    }
+
+    // Find indices where the derivative is close to 0 and within the region of interest
+    for (int i = 0; i < n - 1; i++) {
+        if (fabs(yp[i]) < fil && fabs(x[i]) < (D / 2)) {
+            tempPeaks[count] = i;
+            tempPeakValues[count] = y[i];
+            count++;
+        }
+    }
+
+    // Allocate memory for the output arrays with the exact number of peaks
+    *peaks = (int *)malloc(count * sizeof(int));
+    *peakValues = (double *)malloc(count * sizeof(double));
+
+    // Copy data to the output arrays, filtering out duplicates
+    int lastIdx = -1;  // Last index added to the peaks array
+    for (int i = 0; i < count; i++) {
+        if (i == 0 || fabs(tempPeakValues[i] - tempPeakValues[lastIdx]) > fil) {
+            (*peaks)[lastIdx + 1] = tempPeaks[i];
+            (*peakValues)[lastIdx + 1] = tempPeakValues[i];
+            lastIdx++;
+        }
+    }
+
+    // Free temporary arrays
+    free(yp);
+    free(tempPeaks);
+    free(tempPeakValues);
+
+    return lastIdx + 1;  // Return the number of peaks found
+}
