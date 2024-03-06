@@ -23,7 +23,7 @@ void test_it_calculates_the_optimal_plane_size(void)
     TEST_ASSERT_FLOAT_WITHIN(0.000000000001, D, 142112.63138792414);
 }
 
-void test_it_calculates_pupil_CO(void) {
+void test_it_generates_a_circular_obstruction(void) {
     gsl_matrix* expected_matrix = readNumpyBinaryFile("circle_object_provided_by_pupil_co.bin", M, M);
     TEST_ASSERT_EQUAL(expected_matrix->size1, M);
     TEST_ASSERT_EQUAL(expected_matrix->size2, M);
