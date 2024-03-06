@@ -1,6 +1,6 @@
-package "TAOS Occultation Light Curves Simulator"
+package "slc"
 version "1.0"
-purpose "Simulate Occultation Light Curves for TAOS II."
+purpose "Simulate TAOS II Occultation Light Curves."
 
 option "verbose" v "Produce verbose output" flag off
 option "output" o "Specify output file" string required

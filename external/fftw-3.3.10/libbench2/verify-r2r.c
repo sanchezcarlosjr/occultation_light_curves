@@ -18,7 +18,7 @@
  *
  */
 
-/* Lots of ugly duplication from verify-lib.c, plus lots of ugliness in
+/* Lots of ugly duplication from verify-cli.c, plus lots of ugliness in
    general for all of the r2r variants...oh well, for now */
 
 #include "verify.h"
@@ -423,7 +423,7 @@ static void impulse_response(int rnk, dim_stuff *d, R impulse_amp,
 /*
  * Implementation of the FFT tester described in
  *
- * Funda Ergün. Testing multivariate linear functions: Overcoming the
+ * Funda Ergï¿½n. Testing multivariate linear functions: Overcoming the
  * generator bottleneck. In Proceedings of the Twenty-Seventh Annual
  * ACM Symposium on the Theory of Computing, pages 407-416, Las Vegas,
  * Nevada, 29 May--1 June 1995.
@@ -656,7 +656,7 @@ void verify_r2r(bench_problem *p, int rounds, double tol, errors *e)
      e->s = t_shift(n, vecn, &nfo, inA, inB, outA, outB, tmp, 
 		    rounds, tol, d);
 
-     /* grr, verify-lib.c:preserves_input() only works for complex */
+     /* grr, verify-cli.c:preserves_input() only works for complex */
      if (!p->in_place && !p->destroy_input) {
 	  bench_tensor *totalsz_swap, *pckdsz_swap;
 	  totalsz_swap = tensor_copy_swapio(nfo.totalsz);

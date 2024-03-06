@@ -1,20 +1,23 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.27)
+project(OccultationSimulatorTesting VERSION 1.0.0 LANGUAGES C CXX)
 
-# Fetch Google Test
+# GoogleTest requires at least C++14
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 include(FetchContent)
 FetchContent_Declare(
         googletest
-        URL https://github.com/google/googletest/archive/refs/tags/release-1.10.0.zip
+        URL https://github.com/google/googletest/archive/31993dfa6b47e11c7a6ef67cfa8af90892b9bd1c.zip
 )
+# For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-# Define your test executable
-add_executable(your_test_executable tests.c)
+enable_testing()
 
-# Link your test executable against Google Test and your library
-target_link_libraries(your_test_executable gtest_main your_library_name)
+add_executable(hello_test hello_test.cc)
+target_link_libraries(hello_test PUBLIC GTest::gtest_main ${LIBRARY_NAME})
 
-# Add tests to CMake's test runner
 include(GoogleTest)
-gtest_discover_tests(your_test_executable)
+gtest_discover_tests(hello_test)

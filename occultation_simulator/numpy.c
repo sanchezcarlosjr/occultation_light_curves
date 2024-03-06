@@ -3,8 +3,36 @@
 //
 
 #include "numpy.h"
+#include <gsl/gsl_matrix.h>
 
+gsl_matrix* gsl_zeros(int rows, int cols) {
+    // Allocate a matrix of size rows x cols
+    gsl_matrix* m = gsl_matrix_alloc(rows, cols);
 
+    // Check if the matrix was successfully allocated
+    if (m != NULL) {
+        // Set all elements of the matrix to zero
+        gsl_matrix_set_zero(m);
+    }
+
+    return m;  // Return the pointer to the newly created matrix
+}
+
+void gsl_print_matrix(const gsl_matrix* m) {
+    for (size_t i = 0; i < m->size1; i++) {  // size1 is the number of rows
+        for (size_t j = 0; j < m->size2; j++) {  // size2 is the number of columns
+            printf("%g ", gsl_matrix_get(m, i, j));
+        }
+        printf("\n");
+    }
+}
+
+void gsl_linspace(double start, double end, size_t num, gsl_vector* vector) {
+    double step = (end - start) / (num - 1);
+    for (size_t i = 0; i < num; i++) {
+        gsl_vector_set(vector, i, start + step * i);
+    }
+}
 
 void linspace(double *arr, double start, double end, int n) {
     double step = (end - start) / (n - 1);

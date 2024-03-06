@@ -1,8 +1,13 @@
+#include "numpy.h"
 #include "cmdline.h"
 #include <stdlib.h>
 
 int main(int argc, char *argv[]) {
     struct gengetopt_args_info args_info;
+    gsl_matrix* matrix = gsl_zeros(5,5);
+    gsl_print_matrix(matrix);
+    gsl_matrix_free(matrix);
+
 
     if (cmdline_parser(argc, argv, &args_info) != 0) {
         exit(1);

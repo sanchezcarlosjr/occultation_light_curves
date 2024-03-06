@@ -27,7 +27,7 @@
 
 const char *gengetopt_args_info_purpose = "Simulate Occultation Light Curves for TAOS II.";
 
-const char *gengetopt_args_info_usage = "Usage: TAOS Occultation Light Curves Simulator [OPTION]...";
+const char *gengetopt_args_info_usage = "Usage: slc [OPTION]...";
 
 const char *gengetopt_args_info_versiontext = "";
 

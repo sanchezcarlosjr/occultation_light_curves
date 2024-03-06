@@ -21,12 +21,12 @@ extern "C" {
 
 #ifndef CMDLINE_PARSER_PACKAGE
 /** @brief the program name (used for printing errors) */
-#define CMDLINE_PARSER_PACKAGE "TAOS Occultation Light Curves Simulator"
+#define CMDLINE_PARSER_PACKAGE "slc"
 #endif
 
 #ifndef CMDLINE_PARSER_PACKAGE_NAME
 /** @brief the complete program name (used for help and version) */
-#define CMDLINE_PARSER_PACKAGE_NAME "TAOS Occultation Light Curves Simulator"
+#define CMDLINE_PARSER_PACKAGE_NAME "slc"
 #endif
 
 #ifndef CMDLINE_PARSER_VERSION
