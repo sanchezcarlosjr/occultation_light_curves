@@ -11,8 +11,13 @@
 #include <stdio.h>
 #include <complex.h>
 #include <fftw3.h>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+
 
 #include <libgen.h> // For dirname function
+typedef double complex** DiffractionPattern;
+
 
 void getLibDir(char *libdir, const char *filepath) {
     strcpy(libdir, filepath);
@@ -62,11 +67,11 @@ void pupilCO(int M, double D, double d, double **P) {
 }
 
 double **allocate2DArray(int rows, int cols) {
-    double **array = (double **)malloc(rows * sizeof(double *));
+    double **array = (double **) malloc(rows * sizeof(double *));
     if (!array) return NULL;
 
     for (int i = 0; i < rows; i++) {
-        array[i] = (double *)malloc(cols * sizeof(double));
+        array[i] = (double *) malloc(cols * sizeof(double));
         if (!array[i]) {
             // Free previously allocated memory in case of failure
             for (int j = 0; j < i; j++) free(array[j]);
@@ -93,11 +98,11 @@ void zeros2(double **array, int rows, int cols) {
 }
 
 double complex **allocateComplex2DArray(int rows, int cols) {
-    double complex **array = (double complex **)malloc(rows * sizeof(double complex *));
+    double complex **array = (double complex **) malloc(rows * sizeof(double complex *));
     if (!array) return NULL;
 
     for (int i = 0; i < rows; i++) {
-        array[i] = (double complex *)malloc(cols * sizeof(double complex));
+        array[i] = (double complex *) malloc(cols * sizeof(double complex));
         if (!array[i]) {
             // Free previously allocated memory in case of failure
             for (int j = 0; j < i; j++) free(array[j]);
@@ -124,7 +129,7 @@ void freeComplex2DArray(double complex **array, int rows) {
 }
 
 // The function will allocate memory for the output matrix, perform the translation, and then return the translated matrix.
-double complex **translate(double complex **P, int dx, int dy, int smx, int smy) {
+double complex **translate(DiffractionPattern P, int dx, int dy, int smx, int smy) {
     double complex **MM = allocateComplex2DArray(smy, smx); // Allocate memory for the translated matrix
     if (!MM) return NULL;
     zerosComplex(MM, smy, smx); // Initialize MM with zeros
@@ -189,8 +194,8 @@ double **pupil_doble(int M, double D, double d) {
     }
 
     // Translate and combine obstructions
-    double complex ** translatedP1 = translate(P1, M, M, -sepX, sepY);
-    double complex ** translatedP2 = translate(P2, M, M, sepX, sepY);
+    double complex **translatedP1 = translate(P1, M, M, -sepX, sepY);
+    double complex **translatedP2 = translate(P2, M, M, sepX, sepY);
     double **P = zeros(M, M);
 
     for (int i = 0; i < M; i++) {
@@ -272,7 +277,8 @@ void pupilSA(Matrix P, int M, double D, double d) {
     }
 }
 
-void fresnel(double complex *U0, int nx, int ny, int M, double plano, double z, double lmda, double complex *output_intensity) {
+void fresnel(double complex *U0, int nx, int ny, int M, double plano, double z, double lmda,
+             double complex *output_intensity) {
     double k = 2 * M_PI / lmda;
     double x = (plano / M) * nx; // Normally nx = M, so x = plano in meters
     double y = (plano / M) * ny;
@@ -336,7 +342,8 @@ void fresnel(double complex *U0, int nx, int ny, int M, double plano, double z, 
  * G0=15;G1=16;G2=17;G5=18;G8=19;K0=20;K1=21;K2=22;K3=23;K4=24;K5=25;K7=26;
  * M0=27;M1=28;M2=29;M3=30;M4=31;M5=32;M6=33;M7=34;M8=35
 */
-void spectra(double complex *U0, int nx, int ny, int M, double plano, double z, int nEst, int nLmdas, double complex * acc) {
+void
+spectra(double complex *U0, int nx, int ny, int M, double plano, double z, int nEst, int nLmdas, double complex *acc) {
     char libdir[1024];
     getLibDir(libdir, __FILE__);
     // Define file paths - you'll need to define how libdir is set
@@ -373,11 +380,11 @@ void spectra(double complex *U0, int nx, int ny, int M, double plano, double z, 
         return;
     }
 
-    int U0Size = nx*ny;
+    int U0Size = nx * ny;
 
     // Read data from the file and perform calculations
     double lamda, peso;
-    double complex *output_intensity = (double complex *)malloc(U0Size * sizeof(double complex));
+    double complex *output_intensity = (double complex *) malloc(U0Size * sizeof(double complex));
     int count = 0;
 
     // Assuming the data file has two columns: lamda and peso
@@ -410,6 +417,7 @@ typedef struct {
     double M;       // Absolute magnitude
     double L;       // Luminosity relative to the Sun
 } Star;
+
 /*
  * Function to calculate the apparent radii of stars
 % mV --> Apparent magnitude
@@ -447,14 +455,15 @@ void calcRstar(double mV, int nEst, double ua, Star stars[], int numStars, char 
     snprintf(tipo, 10, "%s", star.tipo);
 }
 
-void promedioPD(double complex *diffractionPattern, double R_star, double plano, int M, double d, double complex *intensityOut) {
+void promedioPD(double complex *diffractionPattern, double R_star, double plano, int M, double d,
+                double complex *intensityOut) {
     double star_px = (R_star / plano) * M;
     double obj_px = (d / 4.0 / plano) * M;
-    int div = (int)ceil(star_px / obj_px);
+    int div = (int) ceil(star_px / obj_px);
     double rr = star_px / div;
 
     // Assuming a maximum number of steps for allocation
-    int maxSteps = (int)ceil((star_px - rr) / rr) + 1;
+    int maxSteps = (int) ceil((star_px - rr) / rr) + 1;
 
     int co = 1;
     for (int k1 = 0; k1 < maxSteps; k1++) {
@@ -462,14 +471,14 @@ void promedioPD(double complex *diffractionPattern, double R_star, double plano,
         if (currentReso > star_px) break;
 
         double perim = 2 * M_PI * currentReso;
-        int paso = (int)ceil(perim / obj_px);
+        int paso = (int) ceil(perim / obj_px);
         double resot = 2 * M_PI / paso;
 
         for (double teta = resot; teta < 2 * M_PI + .0001; teta += resot) {
             double dx = currentReso * cos(teta);
             double dy = currentReso * sin(teta);
 
-            double complex** tempIntensity = translate(&diffractionPattern, M,  M, dx, dy);
+            double complex **tempIntensity = translate(&diffractionPattern, M, M, dx, dy);
 
             // Accumulate translated intensity into intensityOut
             for (int i = 0; i < M * M; i++) {
@@ -489,6 +498,44 @@ void promedioPD(double complex *diffractionPattern, double R_star, double plano,
 
 }
 
+void linspace2(double start, double end, int num, double *result) {
+    double step = (end - start) / (num - 1);
+    for (int i = 0; i < num; i++) {
+        result[i] = start + i * step;
+    }
+}
+
+void extraerPerfil(double **I0, int M, double D, double T, double b, double *x, double *y) {
+    double m2p = M / D;
+    T = T * M_PI / 180; // Convert angle to radians
+
+    linspace2(-D / 2, D / 2, M, x);
+
+    for (int k = 0; k < M; k++) {
+        double x1 = x[k] * cos(T) - b * sin(T);
+        double x2 = x[k] * sin(T) + b * cos(T);
+
+        // Convert to pixel numbers
+        int hp = (int) (m2p * x1 + M / 2);
+        int vp = (int) (m2p * x2 + M / 2);
+
+        // Ensure hp and vp are within the bounds of the array
+        if (hp >= 0 && hp < M && vp >= 0 && vp < M) {
+            y[k] = I0[vp][hp]; // Access intensity value at (vp, hp)
+        } else {
+            y[k] = 0; // Out of bounds, set intensity to 0
+        }
+    }
+}
+
+double calcPlano(double d, double lmda, double ua) {
+    const double AU_TO_METERS = 1.496e11; // Conversion factor from AU to meters
+    double z = ua * AU_TO_METERS; // Distance in meters
+    double fscale = sqrt(lmda * z / 2); // Fresnel scale
+    double Rho = d / (2 * fscale);
+    double plano = (50 * d) / Rho; // Size of the plane in meters
+    return plano;
+}
 
 double SNR_TAOS2(double mV) {
     // Polynomial coefficients
@@ -500,6 +547,46 @@ double SNR_TAOS2(double mV) {
     double SNR = p1 * mV * mV + p2 * mV + p3;
 
     return SNR;
+}
+
+
+/*
+ * Add Poisson noise to an image
+diffractionPattern --> image matrix
+mV --> apparent magnitude of the star
+OUT --> In: matrix with added noise, assuming NOISE=1/SNR calculated from TAOS-II
+ */
+void addNoise(DiffractionPattern diffractionPattern, int M, double mV) {
+    double noise = 1 / SNR_TAOS2(mV);
+
+    // Initialize GSL random number generator
+    const gsl_rng_type *T;
+    gsl_rng *GSLRandomNumberGenerator;
+    gsl_rng_env_setup();
+    T = gsl_rng_default;
+    GSLRandomNumberGenerator = gsl_rng_alloc(T);
+
+    double mean = 0.0; // For calculating the mean of the noise mask
+
+    // Add Poisson noise to each pixel and calculate mean of the noise mask
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < M; j++) {
+            double poisson_noise = gsl_ran_poisson(GSLRandomNumberGenerator, diffractionPattern[i][j]);
+            diffractionPattern[i][j] += poisson_noise; // Add Poisson noise to the original image
+            mean += poisson_noise;
+        }
+    }
+    mean /= (M * M); // Calculate mean of the noise mask
+
+    // Normalize the noise mask and add weighted noise according to TAOS-II
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < M; j++) {
+            double normalized_noise = (diffractionPattern[i][j] / mean) * noise - noise;
+            diffractionPattern[i][j] += normalized_noise; // Add the normalized and weighted noise to the image
+        }
+    }
+
+    gsl_rng_free(GSLRandomNumberGenerator); // Free the GSL random number generator
 }
 
 double **createSquareAperture(int M, double D, double d) {
