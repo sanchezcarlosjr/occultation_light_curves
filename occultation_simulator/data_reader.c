@@ -22,22 +22,35 @@ C:
 gsl_matrix* matrix = readNumpyBinaryFile("matrix.bin", 3, 3);
 
  */
-gsl_matrix* readNumpyBinaryFile(const char* filename, size_t rows, size_t cols, size_t size) {
-    FILE* file = fopen(filename, "rb");
-    if (!file) {
-        perror("Failed to open file");
-        return NULL;
-    }
-    // Allocate a GSL matrix
-    gsl_matrix *m = gsl_matrix_alloc(rows, cols);
+gsl_matrix* readHDF5File(const char* filename, size_t rows, size_t cols) {
+    hid_t file_id, dataset_id;
+    gsl_matrix* matrix = gsl_matrix_alloc(rows, cols);
+    unsigned mode = H5F_ACC_RDONLY;
 
-    // Read the binary data directly into the GSL matrix's data block
-    if (fread(m->data, size, rows * cols, file) != rows * cols) {
-        fprintf(stderr, "Error reading matrix data from the binary file.\n");
-        gsl_matrix_free(m);
-        fclose(file);
+    if ((file_id = H5Fopen(filename, mode, H5P_DEFAULT)) < 0) {
+        fprintf(stderr, "unable to open the file: %s\n", filename);
+        gsl_matrix_free(matrix);
         return NULL;
     }
 
-    return m;
+    if ((dataset_id = H5Dopen2(file_id, "dataset", H5P_DEFAULT)) < 0) {
+        fprintf(stderr, "unable to open the dataset in file: %s\n", filename);
+        H5Fclose(file_id);
+        gsl_matrix_free(matrix);
+        return NULL;
+    }
+
+    if (H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, matrix->data) < 0) {
+        fprintf(stderr, "unable to read the dataset from file: %s\n", filename);
+        H5Dclose(dataset_id);
+        H5Fclose(file_id);
+        gsl_matrix_free(matrix);
+        return NULL;
+    }
+
+    // Successfully read the data, now close the dataset and file handles
+    H5Dclose(dataset_id);
+    H5Fclose(file_id);
+
+    return matrix;
 }

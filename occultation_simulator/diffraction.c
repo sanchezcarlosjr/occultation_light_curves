@@ -78,8 +78,8 @@ gsl_matrix *pupilCO(int M, double D, double d) {
  * @param smy The number of rows in the matrix.
  * @return A new GSL complex matrix representing the translated diffraction pattern.
  */
-gsl_matrix_complex* translate(const gsl_matrix_complex* P, int dx, int dy, int smx, int smy) {
-    gsl_matrix_complex* M2 = gsl_matrix_complex_alloc(smy, smx);
+gsl_matrix* translate(const gsl_matrix* P, int dx, int dy, int smx, int smy) {
+    gsl_matrix* M2 = gsl_matrix_alloc(smy, smx);
     if (!M2) return NULL;
 
     for (int i = 0; i < smy; i++) {
@@ -89,10 +89,10 @@ gsl_matrix_complex* translate(const gsl_matrix_complex* P, int dx, int dy, int s
             int sourceCol = (j - dx + smx) % smx;
 
             // Get the complex value from the source position
-            gsl_complex z = gsl_matrix_complex_get(P, sourceRow, sourceCol);
+            double z = gsl_matrix_get(P, sourceRow, sourceCol);
 
             // Set the complex value to the target position
-            gsl_matrix_complex_set(M2, i, j, z);
+            gsl_matrix_set(M2, i, j, z);
         }
     }
 
@@ -111,43 +111,52 @@ gsl_matrix_complex* translate(const gsl_matrix_complex* P, int dx, int dy, int s
  * @param r2 Radius of the smaller circular obstruction.
  * @return A GSL matrix representing the combined circular obstructions.
  */
-gsl_matrix_complex* dynamicPupilDoble(int M, double D, double d, int sepX, int sepY, double r1, double r2) {
-    gsl_matrix_complex *P1 = gsl_matrix_complex_alloc(M, M);
-    gsl_matrix_complex *P2 = gsl_matrix_complex_alloc(M, M);
-    gsl_matrix_complex_set_zero(P1);
-    gsl_matrix_complex_set_zero(P2);
+gsl_matrix* pupilDoble(int M, double D, double d) {
+    double r1 = (d / 2) * 0.65;
+    double r2 = sqrt(pow(d / 2, 2) - pow(r1, 2));
+    double d1 = r1 * 2;
+    double d2 = r2 * 2;
+    double Dx = 0.45 * d1 + 0.45 * d2;  // Orientation in X
+    double Dy = 0;
+    int sepX = (int)((Dx / 2) / D * M);
+    int sepY = (int)((Dy / 2) / D * M);
 
-    double phi, rho;
+    gsl_matrix* P1 = gsl_matrix_alloc(M, M);
+    gsl_matrix* P2 = gsl_matrix_alloc(M, M);
 
     // Generate obstructions
     for (int i = 0; i < M; i++) {
         for (int j = 0; j < M; j++) {
             double x = -D / 2 + D * i / M;
             double y = -D / 2 + D * j / M;
-            rho = sqrt(x * x + y * y);  // Calculate rho directly
-            gsl_complex val1 = gsl_complex_rect((rho >= r1) ? 1.0 : 0.0, 0.0); // Large obstruction
-            gsl_complex val2 = gsl_complex_rect((rho >= r2) ? 1.0 : 0.0, 0.0); // Small obstruction
-            gsl_matrix_complex_set(P1, i, j, val1);
-            gsl_matrix_complex_set(P2, i, j, val2);
+            double r = sqrt(x * x + y * y);
+            gsl_matrix_set(P1, i, j, r >= r1 ? 1.0 : 0.0);  // Large obstruction
+            gsl_matrix_set(P2, i, j, r >= r2 ? 1.0 : 0.0);  // Small obstruction
         }
     }
 
-    // TODO: Implement translation of P1 and P2 by (-sepX, sepY) and (sepX, sepY) respectively
-    // GSL does not directly support matrix translation, so you might need to implement it
+    // Translate and combine obstructions using the 'translate' function
+    gsl_matrix* translatedP1 = translate(P1, -sepX, sepY, M, M);
+    gsl_matrix* translatedP2 = translate(P2, sepX, sepY, M, M);
+    gsl_matrix* P = gsl_matrix_alloc(M, M);
+    gsl_matrix_set_zero(P);
 
-    // Combine translated obstructions
-    gsl_matrix_complex *P = gsl_matrix_complex_alloc(M, M);
-    gsl_matrix_complex_set_zero(P);
+    // Combine and binarize
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < M; j++) {
+            double val1 = gsl_matrix_get(translatedP1, i, j);
+            double val2 = gsl_matrix_get(translatedP2, i, j);
 
-    // TODO: Combine P1 and P2 into P, taking into account the translation
-    // This involves iterating over P1 and P2, applying the translation offsets, and setting values in P
+            gsl_matrix_set(P, i, j, val1+val2 == 2 ? 1.0 : 0.0);
+        }
+    }
 
-    gsl_matrix_complex_free(P1);
-    gsl_matrix_complex_free(P2);
+    gsl_matrix_free(P1);
+    gsl_matrix_free(P2);
+    gsl_matrix_free(translatedP1);
+    gsl_matrix_free(translatedP2);
 
-    // TODO: Free the matrices representing the translated obstructions
-
-    return P;  // Return the combined matrix
+    return P;
 }
 
 /**
@@ -160,27 +169,27 @@ gsl_matrix_complex* dynamicPupilDoble(int M, double D, double d, int sepX, int s
  * @param sepY Vertical separation between the centers of the two obstructions.
  * @return A GSL matrix representing the double circular obstructions with a custom separator.
  */
-gsl_matrix_complex* pupilDobleWithCustomSeparator(int M, double D, double d, int sepX, int sepY) {
-    double r1 = (d / 2) * 0.65;
-    double r2 = sqrt(pow(d / 2, 2) - pow(r1, 2));
-    double d1 = r1 * 2;
-    double d2 = r2 * 2;
-    double Dx = 0.45 * d1 + 0.45 * d2;
-    double Dy = 0;
-    return dynamicPupilDoble(M, D, d, (int) ((Dx / 2) / D * M) + sepX, (int) ((Dy / 2) / D * M) + sepY, r1, r2);
-}
-
-/**
- * Wrapper function to create a double circular obstruction with no separator.
- *
- * @param M Size of the square matrix in pixels.
- * @param D Size of the matrix in meters.
- * @param d Central dimming in meters, treated as if it were circular.
- * @return A GSL matrix representing the double circular obstructions with no separator.
- */
-gsl_matrix_complex* pupilDoble(int M, double D, double d) {
-    return pupilDobleWithCustomSeparator(M, D, d, 0, 0);
-}
+//gsl_matrix_complex* pupilDobleWithCustomSeparator(int M, double D, double d, int sepX, int sepY) {
+//    double r1 = (d / 2) * 0.65;
+//    double r2 = sqrt(pow(d / 2, 2) - pow(r1, 2));
+//    double d1 = r1 * 2;
+//    double d2 = r2 * 2;
+//    double Dx = 0.45 * d1 + 0.45 * d2;
+//    double Dy = 0;
+//    return dynamicPupilDoble(M, D, d, (int) ((Dx / 2) / D * M) + sepX, (int) ((Dy / 2) / D * M) + sepY, r1, r2);
+//}
+//
+///**
+// * Wrapper function to create a double circular obstruction with no separator.
+// *
+// * @param M Size of the square matrix in pixels.
+// * @param D Size of the matrix in meters.
+// * @param d Central dimming in meters, treated as if it were circular.
+// * @return A GSL matrix representing the double circular obstructions with no separator.
+// */
+//gsl_matrix_complex* pupilDoble(int M, double D, double d) {
+//    return pupilDobleWithCustomSeparator(M, D, d, 0, 0);
+//}
 
 
 // Function to generate a circular aperture
@@ -247,8 +256,7 @@ void pupilSA(ComplexMatrix P, int M, double D, double d) {
     }
 }
 
-void fresnel(double complex *U0, int nx, int ny, int M, double plano, double z, double lmda,
-             double complex *output_intensity) {
+void fresnel(double complex *U0, int nx, int ny, int M, double plano, double z, double lmda, double complex *output_intensity) {
     double k = 2 * M_PI / lmda;
     double x = (plano / M) * nx; // Normally nx = M, so x = plano in meters
     double y = (plano / M) * ny;
@@ -436,86 +444,12 @@ void calcRstar(double mV, int nEst, double ua, Star stars[], int numStars, char 
  * @param intensityOut A GSL complex matrix to store the output intensity pattern.
  */
 void promedioPD(gsl_matrix_complex *diffractionPattern, double R_star, double plano, int M, double d, gsl_matrix_complex *intensityOut) {
-    double star_px = (R_star / plano) * M;
-    double obj_px = (d / 4.0 / plano) * M;
-    int div = (int) ceil(star_px / obj_px);
-    double rr = star_px / div;
 
-    // Assuming a maximum number of steps for allocation
-    int maxSteps = (int) ceil((star_px - rr) / rr) + 1;
-
-    int co = 1;
-    for (int k1 = 0; k1 < maxSteps; k1++) {
-        double currentReso = rr + k1 * rr;
-        if (currentReso > star_px) break;
-
-        double perim = 2 * M_PI * currentReso;
-        int paso = (int) ceil(perim / obj_px);
-        double resot = 2 * M_PI / paso;
-
-        for (double teta = resot; teta < 2 * M_PI + .0001; teta += resot) {
-            double dx = currentReso * cos(teta);
-            double dy = currentReso * sin(teta);
-
-            // Use the translate function that works with GSL matrices
-            gsl_matrix_complex *tempIntensity = translate(diffractionPattern, dx, dy, M, M);
-
-            // Accumulate translated intensity into intensityOut
-            for (int i = 0; i < M; i++) {
-                for (int j = 0; j < M; j++) {
-                    gsl_complex z = gsl_matrix_complex_get(tempIntensity, i, j);
-                    gsl_complex original = gsl_matrix_complex_get(intensityOut, i, j);
-                    gsl_complex sum = gsl_complex_add(original, z);
-                    gsl_matrix_complex_set(intensityOut, i, j, sum);
-                }
-            }
-
-            co++;
-            gsl_matrix_complex_free(tempIntensity); // Free the temporary matrix
-        }
-    }
-
-    // Combine the original and translated intensity images and normalize
-    gsl_complex normalizationFactor = gsl_complex_rect(1.0 / co, 0.0);
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < M; j++) {
-            gsl_complex z = gsl_matrix_complex_get(intensityOut, i, j);
-            gsl_complex original = gsl_matrix_complex_get(diffractionPattern, i, j);
-            gsl_complex sum = gsl_complex_add(original, z);
-            gsl_complex normalized = gsl_complex_mul(sum, normalizationFactor);
-            gsl_matrix_complex_set(intensityOut, i, j, normalized);
-        }
-    }
 }
 
-void linspace2(double start, double end, int num, double *result) {
-    double step = (end - start) / (num - 1);
-    for (int i = 0; i < num; i++) {
-        result[i] = start + i * step;
-    }
-}
 
 void extraerPerfil(double **I0, int M, double D, double T, double b, double *x, double *y) {
-    double m2p = M / D;
-    T = T * M_PI / 180; // Convert angle to radians
 
-    linspace2(-D / 2, D / 2, M, x);
-
-    for (int k = 0; k < M; k++) {
-        double x1 = x[k] * cos(T) - b * sin(T);
-        double x2 = x[k] * sin(T) + b * cos(T);
-
-        // Convert to pixel numbers
-        int hp = (int) (m2p * x1 + M / 2);
-        int vp = (int) (m2p * x2 + M / 2);
-
-        // Ensure hp and vp are within the bounds of the array
-        if (hp >= 0 && hp < M && vp >= 0 && vp < M) {
-            y[k] = I0[vp][hp]; // Access intensity value at (vp, hp)
-        } else {
-            y[k] = 0; // Out of bounds, set intensity to 0
-        }
-    }
 }
 
 /**
