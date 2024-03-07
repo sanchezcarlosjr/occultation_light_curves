@@ -24,7 +24,7 @@ void test_it_calculates_the_optimal_plane_size(void)
 }
 
 void test_it_generates_a_circular_obstruction(void) {
-    gsl_matrix* expected_matrix = readNumpyBinaryFile("circle_object_provided_by_pupil_co.bin", M, M, sizeof(double));
+    gsl_matrix* expected_matrix = readHDF5File("circle_object_provided_by_pupil_co.h5", M, M);
     TEST_ASSERT_EQUAL(expected_matrix->size1, M);
     TEST_ASSERT_EQUAL(expected_matrix->size2, M);
     TEST_ASSERT_EQUAL(gsl_matrix_get(expected_matrix, 0, 0), 1);
@@ -37,12 +37,17 @@ void test_it_generates_a_circular_obstruction(void) {
 }
 
 void test_it_generates_a_contact_binary(void) {
-    gsl_matrix* expected_matrix = readNumpyBinaryFile("contact_binary_provided_by_pupil_doble.bin", 6, 6, sizeof(double));
-    TEST_ASSERT_EQUAL(expected_matrix->size1, 6);
-    TEST_ASSERT_EQUAL(expected_matrix->size2, 6);
-    gsl_print_matrix(expected_matrix);
+    gsl_matrix* expected_matrix = readHDF5File("contact_binary_provided_by_pupil_doble.h5", M, M);
+    TEST_ASSERT_EQUAL(expected_matrix->size1, M);
+    TEST_ASSERT_EQUAL(expected_matrix->size2, M);
     TEST_ASSERT_EQUAL(gsl_matrix_get(expected_matrix, 0, 0), 1);
-
+    gsl_matrix* actual_matrix = pupilDoble(M, calcPlano(d, lambda, ua), d);
+    TEST_ASSERT_EQUAL(gsl_matrix_get(actual_matrix, 0, 0), 1);
+    TEST_ASSERT_EQUAL(gsl_matrix_get(actual_matrix, 1024, 1024), 0);
+    int result = gsl_matrix_equal_with_tolerance(expected_matrix, actual_matrix, 0);
+    TEST_ASSERT_EQUAL(result, 1);
+    gsl_matrix_free(expected_matrix);
+    gsl_matrix_free(actual_matrix);
 }
 
 int main(void)
