@@ -1,5 +1,7 @@
 # Occultation light curves simulator
 
+![Generate light curves and save it with HDF5](./assets/generate-light-curves-and-save-it-with-hdf5.png)
+
 # Installation
 1. Install FFTW.
 
