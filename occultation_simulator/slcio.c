@@ -60,7 +60,7 @@ gsl_matrix* HDF5Wrapper_readDataset(HDF5Wrapper* self, const char* datasetName, 
 }
 
 void HDF5Wrapper_free(HDF5Wrapper* self) {
-    H5Dclose(self->file_id);
+    H5Fclose(self->file_id);
     free(self);
 }
 
