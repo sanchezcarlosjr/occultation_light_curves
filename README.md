@@ -21,3 +21,13 @@ sudo pacman -S gsl
 
 
 # Contribution
+Requirements cmake, a C compiler, GSL and FFTW.
+
+1. Clone the repository
+git clone 
+
+2. Cmake
+```
+cmake -B build && cmake --build build && cd build/bin/
+```
+
