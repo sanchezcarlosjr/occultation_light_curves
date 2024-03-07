@@ -53,3 +53,7 @@ b. Install FFTW from this repository.
 cmake -B build && cmake --build build && cd build/bin/
 ```
 
+3. Pull data to test purposes.
+```
+git lfs pull
+```
