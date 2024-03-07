@@ -1,4 +1,4 @@
-# Occultation light curves simulator
+# Occultation light curve simulator
 
 ![Generate light curves and save it with HDF5](./assets/generate-light-curves-and-save-it-with-hdf5.png)
 
