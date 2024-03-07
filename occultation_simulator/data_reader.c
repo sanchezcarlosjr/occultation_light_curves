@@ -22,7 +22,7 @@ C:
 gsl_matrix* matrix = readNumpyBinaryFile("matrix.bin", 3, 3);
 
  */
-gsl_matrix* readNumpyBinaryFile(const char* filename, size_t rows, size_t cols) {
+gsl_matrix* readNumpyBinaryFile(const char* filename, size_t rows, size_t cols, size_t size) {
     FILE* file = fopen(filename, "rb");
     if (!file) {
         perror("Failed to open file");
@@ -32,7 +32,7 @@ gsl_matrix* readNumpyBinaryFile(const char* filename, size_t rows, size_t cols) 
     gsl_matrix *m = gsl_matrix_alloc(rows, cols);
 
     // Read the binary data directly into the GSL matrix's data block
-    if (fread(m->data, sizeof(double), rows * cols, file) != rows * cols) {
+    if (fread(m->data, size, rows * cols, file) != rows * cols) {
         fprintf(stderr, "Error reading matrix data from the binary file.\n");
         gsl_matrix_free(m);
         fclose(file);

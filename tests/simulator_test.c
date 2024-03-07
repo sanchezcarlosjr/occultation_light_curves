@@ -24,10 +24,10 @@ void test_it_calculates_the_optimal_plane_size(void)
 }
 
 void test_it_generates_a_circular_obstruction(void) {
-    gsl_matrix* expected_matrix = readNumpyBinaryFile("circle_object_provided_by_pupil_co.bin", M, M);
+    gsl_matrix* expected_matrix = readNumpyBinaryFile("circle_object_provided_by_pupil_co.bin", M, M, sizeof(double));
     TEST_ASSERT_EQUAL(expected_matrix->size1, M);
     TEST_ASSERT_EQUAL(expected_matrix->size2, M);
-    TEST_ASSERT_EQUAL(expected_matrix->data[0], 1);
+    TEST_ASSERT_EQUAL(gsl_matrix_get(expected_matrix, 0, 0), 1);
     double D = calcPlano(d, lambda, ua);
     gsl_matrix* actual_matrix = pupilCO(M, D, d);
     int result = gsl_matrix_equal_with_tolerance(expected_matrix, actual_matrix, 0.000000000001);
@@ -36,12 +36,22 @@ void test_it_generates_a_circular_obstruction(void) {
     gsl_matrix_free(actual_matrix);
 }
 
+void test_it_generates_a_contact_binary(void) {
+    gsl_matrix* expected_matrix = readNumpyBinaryFile("contact_binary_provided_by_pupil_doble.bin", 6, 6, sizeof(double));
+    TEST_ASSERT_EQUAL(expected_matrix->size1, 6);
+    TEST_ASSERT_EQUAL(expected_matrix->size2, 6);
+    gsl_print_matrix(expected_matrix);
+    TEST_ASSERT_EQUAL(gsl_matrix_get(expected_matrix, 0, 0), 1);
+
+}
+
 int main(void)
 {
     UNITY_BEGIN();
 
     RUN_TEST(test_it_calculates_the_optimal_plane_size);
-    RUN_TEST(test_it_calculates_pupil_CO);
+    RUN_TEST(test_it_generates_a_circular_obstruction);
+    RUN_TEST(test_it_generates_a_contact_binary);
 
     return UNITY_END();
 }

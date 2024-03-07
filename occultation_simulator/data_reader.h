@@ -7,6 +7,6 @@
 #include <stddef.h>
 #include <gsl/gsl_matrix.h>
 
-gsl_matrix* readNumpyBinaryFile(const char* filename, size_t rows, size_t cols);
+gsl_matrix* readNumpyBinaryFile(const char* filename, size_t rows, size_t cols, size_t size);
 
 #endif //OCCULTATION_LIGHT_CURVES_SPECTRA_H
