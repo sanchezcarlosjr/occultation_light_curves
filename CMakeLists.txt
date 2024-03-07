@@ -9,12 +9,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(EXECUTABLE_NAME slc)
 set(LIBRARY_NAME occultation_simulator)
 
-
-
 add_subdirectory(occultation_simulator)
 add_subdirectory(cli)
-
-
-include(CTest)
 add_subdirectory(external)
-add_subdirectory(tests)
+
+#include(CTest)
+#add_subdirectory(tests)

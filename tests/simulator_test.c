@@ -1,7 +1,7 @@
 #include <unity.h>
 #include "diffraction.h"
-#include "data_readers.h"
 #include "numpy.h"
+#include "slcio.h"
 
 double M=2048;
 double lambda=600e-9;
@@ -24,7 +24,8 @@ void test_it_calculates_the_optimal_plane_size(void)
 }
 
 void test_it_generates_a_circular_obstruction(void) {
-    gsl_matrix* expected_matrix = readHDF5File("circle_object_provided_by_pupil_co.h5", M, M);
+    HDF5Wrapper* hdf5 = NewHDF5Wrapper("testing_simulation.h5");
+    gsl_matrix* expected_matrix = hdf5->readDataset(hdf5, "O1", M, M);
     TEST_ASSERT_EQUAL(expected_matrix->size1, M);
     TEST_ASSERT_EQUAL(expected_matrix->size2, M);
     TEST_ASSERT_EQUAL(gsl_matrix_get(expected_matrix, 0, 0), 1);
@@ -37,7 +38,8 @@ void test_it_generates_a_circular_obstruction(void) {
 }
 
 void test_it_generates_a_contact_binary(void) {
-    gsl_matrix* expected_matrix = readHDF5File("contact_binary_provided_by_pupil_doble.h5", M, M);
+    HDF5Wrapper* hdf5 = NewHDF5Wrapper("testing_simulation.h5");
+    gsl_matrix* expected_matrix = hdf5->readDataset(hdf5, "O2", M, M);
     TEST_ASSERT_EQUAL(expected_matrix->size1, M);
     TEST_ASSERT_EQUAL(expected_matrix->size2, M);
     TEST_ASSERT_EQUAL(gsl_matrix_get(expected_matrix, 0, 0), 1);
