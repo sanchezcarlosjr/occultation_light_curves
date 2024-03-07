@@ -19,7 +19,7 @@ sudo pacman -S fftw gsl hdf5
 Start your simulation with default parameters and save your data into HDF5.
 
 ```bash
-slc - polymele.h5
+slc -o polymele.h5
 ```
 
 ## Available commands
