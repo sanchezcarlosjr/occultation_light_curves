@@ -25,7 +25,7 @@
 
 #include "cmdline.h"
 
-const char *gengetopt_args_info_purpose = "Simulate Occultation Light Curves for TAOS II.";
+const char *gengetopt_args_info_purpose = "Simulate TAOS II Occultation Light Curves.\n\nBy sanchezcarlosjr <hello@sanchezcarlosjr.com>";
 
 const char *gengetopt_args_info_usage = "Usage: slc [OPTION]...";
 
@@ -38,12 +38,28 @@ const char *gengetopt_args_info_help[] = {
   "  -V, --version        Print version and exit",
   "  -v, --verbose        Produce verbose output  (default=off)",
   "  -o, --output=STRING  Specify output file",
+  "  -M, --M=INT          Mesh size in pixels  (default=`2048')",
+  "  -l, --lamb=DOUBLE    Wavelength in meters  (default=`6.00e-7')",
+  "  -e, --vE=INT         Earth's translation speed in m/s  (default=`29800')",
+  "  -r, --vr=INT         Speed of the body if it goes against the direction of\n                         the earth in m/s  (default=`5000')",
+  "  -a, --ang=INT        Angle from opposition to calculate the tangential speed\n                         of the object in degrees  (default=`30')",
+  "  -f, --fps=INT        Frames per second  (default=`20')",
+  "  -m, --mV=INT         Apparent magnitude of the star  (default=`12')",
+  "  -n, --nEst=INT       Spectral type selection of the star  (default=`30')",
+  "  -N, --nLamb=INT      Number of wavelengths to consider for spectral\n                         calculation  (default=`10')",
+  "  -d, --d=INT          Diameter of the object in meters  (default=`3000')",
+  "  -u, --ua=DOUBLE      Distance of the object in astronomical units\n                         (default=`45')",
+  "  -t, --toffset=INT    Offset in pixels  (default=`0')",
+  "  -T, --T=INT          Reading direction in degrees  (default=`0')",
+  "  -b, --b=INT          Impact parameter in meters  (default=`0')",
     0
 };
 
 typedef enum {ARG_NO
   , ARG_FLAG
   , ARG_STRING
+  , ARG_INT
+  , ARG_DOUBLE
 } cmdline_parser_arg_type;
 
 static
@@ -68,6 +84,20 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->version_given = 0 ;
   args_info->verbose_given = 0 ;
   args_info->output_given = 0 ;
+  args_info->M_given = 0 ;
+  args_info->lamb_given = 0 ;
+  args_info->vE_given = 0 ;
+  args_info->vr_given = 0 ;
+  args_info->ang_given = 0 ;
+  args_info->fps_given = 0 ;
+  args_info->mV_given = 0 ;
+  args_info->nEst_given = 0 ;
+  args_info->nLamb_given = 0 ;
+  args_info->d_given = 0 ;
+  args_info->ua_given = 0 ;
+  args_info->toffset_given = 0 ;
+  args_info->T_given = 0 ;
+  args_info->b_given = 0 ;
 }
 
 static
@@ -77,6 +107,34 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->verbose_flag = 0;
   args_info->output_arg = NULL;
   args_info->output_orig = NULL;
+  args_info->M_arg = 2048;
+  args_info->M_orig = NULL;
+  args_info->lamb_arg = 6.00e-7;
+  args_info->lamb_orig = NULL;
+  args_info->vE_arg = 29800;
+  args_info->vE_orig = NULL;
+  args_info->vr_arg = 5000;
+  args_info->vr_orig = NULL;
+  args_info->ang_arg = 30;
+  args_info->ang_orig = NULL;
+  args_info->fps_arg = 20;
+  args_info->fps_orig = NULL;
+  args_info->mV_arg = 12;
+  args_info->mV_orig = NULL;
+  args_info->nEst_arg = 30;
+  args_info->nEst_orig = NULL;
+  args_info->nLamb_arg = 10;
+  args_info->nLamb_orig = NULL;
+  args_info->d_arg = 3000;
+  args_info->d_orig = NULL;
+  args_info->ua_arg = 45;
+  args_info->ua_orig = NULL;
+  args_info->toffset_arg = 0;
+  args_info->toffset_orig = NULL;
+  args_info->T_arg = 0;
+  args_info->T_orig = NULL;
+  args_info->b_arg = 0;
+  args_info->b_orig = NULL;
   
 }
 
@@ -89,6 +147,20 @@ void init_args_info(struct gengetopt_args_info *args_info)
   args_info->version_help = gengetopt_args_info_help[1] ;
   args_info->verbose_help = gengetopt_args_info_help[2] ;
   args_info->output_help = gengetopt_args_info_help[3] ;
+  args_info->M_help = gengetopt_args_info_help[4] ;
+  args_info->lamb_help = gengetopt_args_info_help[5] ;
+  args_info->vE_help = gengetopt_args_info_help[6] ;
+  args_info->vr_help = gengetopt_args_info_help[7] ;
+  args_info->ang_help = gengetopt_args_info_help[8] ;
+  args_info->fps_help = gengetopt_args_info_help[9] ;
+  args_info->mV_help = gengetopt_args_info_help[10] ;
+  args_info->nEst_help = gengetopt_args_info_help[11] ;
+  args_info->nLamb_help = gengetopt_args_info_help[12] ;
+  args_info->d_help = gengetopt_args_info_help[13] ;
+  args_info->ua_help = gengetopt_args_info_help[14] ;
+  args_info->toffset_help = gengetopt_args_info_help[15] ;
+  args_info->T_help = gengetopt_args_info_help[16] ;
+  args_info->b_help = gengetopt_args_info_help[17] ;
   
 }
 
@@ -180,6 +252,20 @@ cmdline_parser_release (struct gengetopt_args_info *args_info)
 
   free_string_field (&(args_info->output_arg));
   free_string_field (&(args_info->output_orig));
+  free_string_field (&(args_info->M_orig));
+  free_string_field (&(args_info->lamb_orig));
+  free_string_field (&(args_info->vE_orig));
+  free_string_field (&(args_info->vr_orig));
+  free_string_field (&(args_info->ang_orig));
+  free_string_field (&(args_info->fps_orig));
+  free_string_field (&(args_info->mV_orig));
+  free_string_field (&(args_info->nEst_orig));
+  free_string_field (&(args_info->nLamb_orig));
+  free_string_field (&(args_info->d_orig));
+  free_string_field (&(args_info->ua_orig));
+  free_string_field (&(args_info->toffset_orig));
+  free_string_field (&(args_info->T_orig));
+  free_string_field (&(args_info->b_orig));
   
   
 
@@ -218,6 +304,34 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
     write_into_file(outfile, "verbose", 0, 0 );
   if (args_info->output_given)
     write_into_file(outfile, "output", args_info->output_orig, 0);
+  if (args_info->M_given)
+    write_into_file(outfile, "M", args_info->M_orig, 0);
+  if (args_info->lamb_given)
+    write_into_file(outfile, "lamb", args_info->lamb_orig, 0);
+  if (args_info->vE_given)
+    write_into_file(outfile, "vE", args_info->vE_orig, 0);
+  if (args_info->vr_given)
+    write_into_file(outfile, "vr", args_info->vr_orig, 0);
+  if (args_info->ang_given)
+    write_into_file(outfile, "ang", args_info->ang_orig, 0);
+  if (args_info->fps_given)
+    write_into_file(outfile, "fps", args_info->fps_orig, 0);
+  if (args_info->mV_given)
+    write_into_file(outfile, "mV", args_info->mV_orig, 0);
+  if (args_info->nEst_given)
+    write_into_file(outfile, "nEst", args_info->nEst_orig, 0);
+  if (args_info->nLamb_given)
+    write_into_file(outfile, "nLamb", args_info->nLamb_orig, 0);
+  if (args_info->d_given)
+    write_into_file(outfile, "d", args_info->d_orig, 0);
+  if (args_info->ua_given)
+    write_into_file(outfile, "ua", args_info->ua_orig, 0);
+  if (args_info->toffset_given)
+    write_into_file(outfile, "toffset", args_info->toffset_orig, 0);
+  if (args_info->T_given)
+    write_into_file(outfile, "T", args_info->T_orig, 0);
+  if (args_info->b_given)
+    write_into_file(outfile, "b", args_info->b_orig, 0);
   
 
   i = EXIT_SUCCESS;
@@ -415,6 +529,12 @@ int update_arg(void *field, char **orig_field,
   case ARG_FLAG:
     *((int *)field) = !*((int *)field);
     break;
+  case ARG_INT:
+    if (val) *((int *)field) = strtol (val, &stop_char, 0);
+    break;
+  case ARG_DOUBLE:
+    if (val) *((double *)field) = strtod (val, &stop_char);
+    break;
   case ARG_STRING:
     if (val) {
       string_field = (char **)field;
@@ -427,8 +547,19 @@ int update_arg(void *field, char **orig_field,
     break;
   };
 
-	FIX_UNUSED(stop_char);
-	
+  /* check numeric conversion */
+  switch(arg_type) {
+  case ARG_INT:
+  case ARG_DOUBLE:
+    if (val && !(stop_char && *stop_char == '\0')) {
+      fprintf(stderr, "%s: invalid numeric value: %s\n", package_name, val);
+      return 1; /* failure */
+    }
+    break;
+  default:
+    ;
+  };
+
   /* store the original value */
   switch(arg_type) {
   case ARG_NO:
@@ -497,10 +628,24 @@ cmdline_parser_internal (
         { "version",	0, NULL, 'V' },
         { "verbose",	0, NULL, 'v' },
         { "output",	1, NULL, 'o' },
+        { "M",	1, NULL, 'M' },
+        { "lamb",	1, NULL, 'l' },
+        { "vE",	1, NULL, 'e' },
+        { "vr",	1, NULL, 'r' },
+        { "ang",	1, NULL, 'a' },
+        { "fps",	1, NULL, 'f' },
+        { "mV",	1, NULL, 'm' },
+        { "nEst",	1, NULL, 'n' },
+        { "nLamb",	1, NULL, 'N' },
+        { "d",	1, NULL, 'd' },
+        { "ua",	1, NULL, 'u' },
+        { "toffset",	1, NULL, 't' },
+        { "T",	1, NULL, 'T' },
+        { "b",	1, NULL, 'b' },
         { 0,  0, 0, 0 }
       };
 
-      c = getopt_long (argc, argv, "hVvo:", long_options, &option_index);
+      c = getopt_long (argc, argv, "hVvo:M:l:e:r:a:f:m:n:N:d:u:t:T:b:", long_options, &option_index);
 
       if (c == -1) break;	/* Exit from `while (1)' loop.  */
 
@@ -534,6 +679,174 @@ cmdline_parser_internal (
               &(local_args_info.output_given), optarg, 0, 0, ARG_STRING,
               check_ambiguity, override, 0, 0,
               "output", 'o',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'M':	/* Mesh size in pixels.  */
+        
+        
+          if (update_arg( (void *)&(args_info->M_arg), 
+               &(args_info->M_orig), &(args_info->M_given),
+              &(local_args_info.M_given), optarg, 0, "2048", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "M", 'M',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'l':	/* Wavelength in meters.  */
+        
+        
+          if (update_arg( (void *)&(args_info->lamb_arg), 
+               &(args_info->lamb_orig), &(args_info->lamb_given),
+              &(local_args_info.lamb_given), optarg, 0, "6.00e-7", ARG_DOUBLE,
+              check_ambiguity, override, 0, 0,
+              "lamb", 'l',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'e':	/* Earth's translation speed in m/s.  */
+        
+        
+          if (update_arg( (void *)&(args_info->vE_arg), 
+               &(args_info->vE_orig), &(args_info->vE_given),
+              &(local_args_info.vE_given), optarg, 0, "29800", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "vE", 'e',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'r':	/* Speed of the body if it goes against the direction of the earth in m/s.  */
+        
+        
+          if (update_arg( (void *)&(args_info->vr_arg), 
+               &(args_info->vr_orig), &(args_info->vr_given),
+              &(local_args_info.vr_given), optarg, 0, "5000", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "vr", 'r',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'a':	/* Angle from opposition to calculate the tangential speed of the object in degrees.  */
+        
+        
+          if (update_arg( (void *)&(args_info->ang_arg), 
+               &(args_info->ang_orig), &(args_info->ang_given),
+              &(local_args_info.ang_given), optarg, 0, "30", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "ang", 'a',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'f':	/* Frames per second.  */
+        
+        
+          if (update_arg( (void *)&(args_info->fps_arg), 
+               &(args_info->fps_orig), &(args_info->fps_given),
+              &(local_args_info.fps_given), optarg, 0, "20", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "fps", 'f',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'm':	/* Apparent magnitude of the star.  */
+        
+        
+          if (update_arg( (void *)&(args_info->mV_arg), 
+               &(args_info->mV_orig), &(args_info->mV_given),
+              &(local_args_info.mV_given), optarg, 0, "12", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "mV", 'm',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'n':	/* Spectral type selection of the star.  */
+        
+        
+          if (update_arg( (void *)&(args_info->nEst_arg), 
+               &(args_info->nEst_orig), &(args_info->nEst_given),
+              &(local_args_info.nEst_given), optarg, 0, "30", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "nEst", 'n',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'N':	/* Number of wavelengths to consider for spectral calculation.  */
+        
+        
+          if (update_arg( (void *)&(args_info->nLamb_arg), 
+               &(args_info->nLamb_orig), &(args_info->nLamb_given),
+              &(local_args_info.nLamb_given), optarg, 0, "10", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "nLamb", 'N',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'd':	/* Diameter of the object in meters.  */
+        
+        
+          if (update_arg( (void *)&(args_info->d_arg), 
+               &(args_info->d_orig), &(args_info->d_given),
+              &(local_args_info.d_given), optarg, 0, "3000", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "d", 'd',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'u':	/* Distance of the object in astronomical units.  */
+        
+        
+          if (update_arg( (void *)&(args_info->ua_arg), 
+               &(args_info->ua_orig), &(args_info->ua_given),
+              &(local_args_info.ua_given), optarg, 0, "45", ARG_DOUBLE,
+              check_ambiguity, override, 0, 0,
+              "ua", 'u',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 't':	/* Offset in pixels.  */
+        
+        
+          if (update_arg( (void *)&(args_info->toffset_arg), 
+               &(args_info->toffset_orig), &(args_info->toffset_given),
+              &(local_args_info.toffset_given), optarg, 0, "0", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "toffset", 't',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'T':	/* Reading direction in degrees.  */
+        
+        
+          if (update_arg( (void *)&(args_info->T_arg), 
+               &(args_info->T_orig), &(args_info->T_given),
+              &(local_args_info.T_given), optarg, 0, "0", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "T", 'T',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'b':	/* Impact parameter in meters.  */
+        
+        
+          if (update_arg( (void *)&(args_info->b_arg), 
+               &(args_info->b_orig), &(args_info->b_given),
+              &(local_args_info.b_given), optarg, 0, "0", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "b", 'b',
               additional_error))
             goto failure;
         

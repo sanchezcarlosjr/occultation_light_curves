@@ -1,4 +1,4 @@
-add_library(${LIBRARY_NAME} STATIC numpy.c diffraction.c data_reader.c)
+add_library(${LIBRARY_NAME} STATIC numpy.c diffraction.c data_readers.c data_writers.c)
 find_package(GSL REQUIRED)
 find_package(FFTW3 REQUIRED COMPONENTS DOUBLE_LIB)
 find_package(HDF5 REQUIRED COMPONENTS C HL)

@@ -1,6 +1,6 @@
 #include <unity.h>
 #include "diffraction.h"
-#include "data_reader.h"
+#include "data_readers.h"
 #include "numpy.h"
 
 double M=2048;

@@ -44,11 +44,67 @@ struct gengetopt_args_info
   char * output_arg;	/**< @brief Specify output file.  */
   char * output_orig;	/**< @brief Specify output file original value given at command line.  */
   const char *output_help; /**< @brief Specify output file help description.  */
+  int M_arg;	/**< @brief Mesh size in pixels (default='2048').  */
+  char * M_orig;	/**< @brief Mesh size in pixels original value given at command line.  */
+  const char *M_help; /**< @brief Mesh size in pixels help description.  */
+  double lamb_arg;	/**< @brief Wavelength in meters (default='6.00e-7').  */
+  char * lamb_orig;	/**< @brief Wavelength in meters original value given at command line.  */
+  const char *lamb_help; /**< @brief Wavelength in meters help description.  */
+  int vE_arg;	/**< @brief Earth's translation speed in m/s (default='29800').  */
+  char * vE_orig;	/**< @brief Earth's translation speed in m/s original value given at command line.  */
+  const char *vE_help; /**< @brief Earth's translation speed in m/s help description.  */
+  int vr_arg;	/**< @brief Speed of the body if it goes against the direction of the earth in m/s (default='5000').  */
+  char * vr_orig;	/**< @brief Speed of the body if it goes against the direction of the earth in m/s original value given at command line.  */
+  const char *vr_help; /**< @brief Speed of the body if it goes against the direction of the earth in m/s help description.  */
+  int ang_arg;	/**< @brief Angle from opposition to calculate the tangential speed of the object in degrees (default='30').  */
+  char * ang_orig;	/**< @brief Angle from opposition to calculate the tangential speed of the object in degrees original value given at command line.  */
+  const char *ang_help; /**< @brief Angle from opposition to calculate the tangential speed of the object in degrees help description.  */
+  int fps_arg;	/**< @brief Frames per second (default='20').  */
+  char * fps_orig;	/**< @brief Frames per second original value given at command line.  */
+  const char *fps_help; /**< @brief Frames per second help description.  */
+  int mV_arg;	/**< @brief Apparent magnitude of the star (default='12').  */
+  char * mV_orig;	/**< @brief Apparent magnitude of the star original value given at command line.  */
+  const char *mV_help; /**< @brief Apparent magnitude of the star help description.  */
+  int nEst_arg;	/**< @brief Spectral type selection of the star (default='30').  */
+  char * nEst_orig;	/**< @brief Spectral type selection of the star original value given at command line.  */
+  const char *nEst_help; /**< @brief Spectral type selection of the star help description.  */
+  int nLamb_arg;	/**< @brief Number of wavelengths to consider for spectral calculation (default='10').  */
+  char * nLamb_orig;	/**< @brief Number of wavelengths to consider for spectral calculation original value given at command line.  */
+  const char *nLamb_help; /**< @brief Number of wavelengths to consider for spectral calculation help description.  */
+  int d_arg;	/**< @brief Diameter of the object in meters (default='3000').  */
+  char * d_orig;	/**< @brief Diameter of the object in meters original value given at command line.  */
+  const char *d_help; /**< @brief Diameter of the object in meters help description.  */
+  double ua_arg;	/**< @brief Distance of the object in astronomical units (default='45').  */
+  char * ua_orig;	/**< @brief Distance of the object in astronomical units original value given at command line.  */
+  const char *ua_help; /**< @brief Distance of the object in astronomical units help description.  */
+  int toffset_arg;	/**< @brief Offset in pixels (default='0').  */
+  char * toffset_orig;	/**< @brief Offset in pixels original value given at command line.  */
+  const char *toffset_help; /**< @brief Offset in pixels help description.  */
+  int T_arg;	/**< @brief Reading direction in degrees (default='0').  */
+  char * T_orig;	/**< @brief Reading direction in degrees original value given at command line.  */
+  const char *T_help; /**< @brief Reading direction in degrees help description.  */
+  int b_arg;	/**< @brief Impact parameter in meters (default='0').  */
+  char * b_orig;	/**< @brief Impact parameter in meters original value given at command line.  */
+  const char *b_help; /**< @brief Impact parameter in meters help description.  */
   
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int version_given ;	/**< @brief Whether version was given.  */
   unsigned int verbose_given ;	/**< @brief Whether verbose was given.  */
   unsigned int output_given ;	/**< @brief Whether output was given.  */
+  unsigned int M_given ;	/**< @brief Whether M was given.  */
+  unsigned int lamb_given ;	/**< @brief Whether lamb was given.  */
+  unsigned int vE_given ;	/**< @brief Whether vE was given.  */
+  unsigned int vr_given ;	/**< @brief Whether vr was given.  */
+  unsigned int ang_given ;	/**< @brief Whether ang was given.  */
+  unsigned int fps_given ;	/**< @brief Whether fps was given.  */
+  unsigned int mV_given ;	/**< @brief Whether mV was given.  */
+  unsigned int nEst_given ;	/**< @brief Whether nEst was given.  */
+  unsigned int nLamb_given ;	/**< @brief Whether nLamb was given.  */
+  unsigned int d_given ;	/**< @brief Whether d was given.  */
+  unsigned int ua_given ;	/**< @brief Whether ua was given.  */
+  unsigned int toffset_given ;	/**< @brief Whether toffset was given.  */
+  unsigned int T_given ;	/**< @brief Whether T was given.  */
+  unsigned int b_given ;	/**< @brief Whether b was given.  */
 
 } ;
 
