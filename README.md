@@ -16,9 +16,7 @@ For example, on Arch Linux, you would run
 sudo pacman -S gsl
 ```
 
-3. Download the program from GitHub
-
-
+3. Download the program from GitHub Releases, so you don't need to compile the repository; it just works.
 
 # Contribution
 Requirements cmake, a C compiler, GSL and FFTW.

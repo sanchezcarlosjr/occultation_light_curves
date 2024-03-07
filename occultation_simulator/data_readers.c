@@ -2,7 +2,7 @@
 // Created by cest on 1/31/24.
 //
 
-#include "data_reader.h"
+#include "data_readers.h"
 #include "stdio.h"
 #include <gsl/gsl_matrix.h>
 

@@ -25,8 +25,8 @@ void getLibDir(char *libdir, const char *filepath) {
  * @param rho Pointer to the radius variable to be set.
  */
 void cart2pol(double x, double y, double *phi, double *rho) {
-    *rho = sqrt(x * x + y * y);  // Calculate the radius
     *phi = atan2(y, x);          // Calculate the angle in radians
+    *rho = sqrt(x * x + y * y);  // Calculate the radius
 }
 
 void pol2cart(double rho, double phi, double *x, double *y) {
@@ -74,29 +74,35 @@ gsl_matrix *pupilCO(int M, double D, double d) {
  * @param P The input GSL complex matrix representing the diffraction pattern.
  * @param dx The translation distance in the X direction (columns).
  * @param dy The translation distance in the Y direction (rows).
- * @param smx The number of columns in the matrix.
- * @param smy The number of rows in the matrix.
  * @return A new GSL complex matrix representing the translated diffraction pattern.
  */
-gsl_matrix* translate(const gsl_matrix* P, int dx, int dy, int smx, int smy) {
-    gsl_matrix* M2 = gsl_matrix_alloc(smy, smx);
-    if (!M2) return NULL;
+gsl_matrix* translate(const gsl_matrix* P, int dx, int dy) {
+    // Allocate a new matrix of the same size as P, initialized to zeros
+    gsl_matrix* result = gsl_matrix_calloc(P->size1, P->size2);
 
-    for (int i = 0; i < smy; i++) {
-        for (int j = 0; j < smx; j++) {
-            // Calculate source positions with circular shift
-            int sourceRow = (i - dy + smy) % smy;
-            int sourceCol = (j - dx + smx) % smx;
+    // Get the dimensions of the matrix
+    size_t rows = P->size1;
+    size_t cols = P->size2;
 
-            // Get the complex value from the source position
-            double z = gsl_matrix_get(P, sourceRow, sourceCol);
+    // Loop over each element in the matrix P
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < cols; ++j) {
+            // Calculate the new position after translation
+            int new_i = i + dy;
+            int new_j = j + dx;
 
-            // Set the complex value to the target position
-            gsl_matrix_set(M2, i, j, z);
+            // Check if the new position is within the bounds of the matrix
+            if (new_i >= 0 && new_i < rows && new_j >= 0 && new_j < cols) {
+                // Get the value from the original matrix
+                double val = gsl_matrix_get(P, i, j);
+                // Set the value in the new position of the result matrix
+                gsl_matrix_set(result, new_i, new_j, val);
+            }
         }
     }
 
-    return M2;
+    // Return the translated matrix
+    return result;
 }
 
 /**
@@ -136,8 +142,8 @@ gsl_matrix* pupilDoble(int M, double D, double d) {
     }
 
     // Translate and combine obstructions using the 'translate' function
-    gsl_matrix* translatedP1 = translate(P1, -sepX, sepY, M, M);
-    gsl_matrix* translatedP2 = translate(P2, sepX, sepY, M, M);
+    gsl_matrix* translatedP1 = translate(P1, -sepX, sepY);
+    gsl_matrix* translatedP2 = translate(P2, sepX, sepY);
     gsl_matrix* P = gsl_matrix_alloc(M, M);
     gsl_matrix_set_zero(P);
 
