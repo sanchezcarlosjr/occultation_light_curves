@@ -2,22 +2,18 @@
 
 ![Generate light curves and save it with HDF5](./assets/generate-light-curves-and-save-it-with-hdf5.png)
 
+# Playground
+Learn how to install and use the program through this [playground](https://colab.research.google.com/drive/1GCPLfTBvZLvwUEgk9O1yfWWH1MQAXUHs?usp=sharing).
+
 # Installation
-1. Install FFTW.
+1. Install the shared libraries.
 
 For example, on Arch Linux, you would run
 ```
-sudo pacman -S fftw
+sudo pacman -S fftw gsl hdf5
 ```
 
-2. Install GNU Scientific Library (GSL).
-
-For example, on Arch Linux, you would run
-```
-sudo pacman -S gsl
-```
-
-3. Download the [latest version](https://github.com/sanchezcarlosjr/occultation_light_curves/releases/latest/download/slc) from GitHub Releases, so you don't need to compile the repository; it just works.
+2. Download the [latest version](https://github.com/sanchezcarlosjr/occultation_light_curves/releases/latest/download/slc) from GitHub Releases, so you don't need to compile the repository; it just works.
 
 # Usage
 Start your simulation with default parameters and save your data into HDF5.
