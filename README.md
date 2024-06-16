@@ -41,7 +41,7 @@ git clone
 a. Install FFTW from this repository.
 ```
   cd external/fftw-3.3.10
-  configure
+  ./configure
   make
   make install
 ```
