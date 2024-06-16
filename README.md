@@ -37,7 +37,8 @@ As a good practice, we provide you with a test suite through Unity. This is a re
 1. Clone the repository
 git clone 
 
-2. Install global dependencies. 
+2. Install global dependencies.
+
 a. Install FFTW from this repository.
 ```
   cd external/fftw-3.3.10
@@ -46,7 +47,7 @@ a. Install FFTW from this repository.
   make install
 ```
 
-b. Install FFTW from this repository.
+b. Install from the official docs.
 
 2. Cmake
 ```
