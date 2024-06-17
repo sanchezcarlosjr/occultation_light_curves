@@ -35,18 +35,21 @@ To contribute to this repository, you must install CMake, a C99-compatible compi
 As a good practice, we provide you with a test suite through Unity. This is a ready-to-go Git Submodule.
 
 1. Clone the repository
-git clone 
+```
+git clone --recurse-submodules -j8 https://github.com/sanchezcarlosjr/occultation_light_curve_simulator.git
+```
 
-2. Install global dependencies. 
+2. Install global dependencies.
+
 a. Install FFTW from this repository.
 ```
   cd external/fftw-3.3.10
-  configure
+  ./configure
   make
   make install
 ```
 
-b. Install FFTW from this repository.
+b. Install GSL, Unity, and hdf5 from the official docs.
 
 2. Cmake
 ```
