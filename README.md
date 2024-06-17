@@ -49,7 +49,7 @@ a. Install FFTW from this repository.
   make install
 ```
 
-b. Install GSL, Unity from the official docs.
+b. Install GSL, Unity, and hdf5 from the official docs.
 
 2. Cmake
 ```
