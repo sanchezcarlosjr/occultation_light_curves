@@ -28,8 +28,33 @@ slc -o polymele.h5
 ```slc``` supports several options, each accessible through the ```slc``` command and through our library. For help on individual commands, add --help following the command name. The commands are available on [here](./cli/cli.ggo).
 
 
-# HDF5 Viewer
+# HDF5 Viewers
 https://myhdf5.hdfgroup.org/
+
+
+# Arch Linux (AUR)
+
+1. Install the AUR package
+```
+yay -S occultation_light_curve_simulator
+```
+
+# Contribution with Arch Linux
+
+1. Clone the repository
+```
+git clone https://github.com/sanchezcarlosjr/occultation_light_curve_simulator.git
+```
+
+Build the package to ensure it works correctly.
+2. Install with PKGBUILD
+```
+makepkg -csi
+```
+Explanation:
+-c: Cleans up work files after build.
+-s: Installs missing dependencies.
+-i: Installs the package after building.
 
 
 # Contribution
