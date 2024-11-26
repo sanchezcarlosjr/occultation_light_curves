@@ -1,5 +1,7 @@
 # Occultation light curve simulator
 
+The Trans-Neptunian Automated Occultation Survey II (TAOS II) event simulator is a valuable tool for modeling and predicting occultation events caused by small objects in the Kuiper Belt and beyond. Integrating this simulator into machine learning (ML) pipelines can indeed provide significant insights. Generating synthetic data or simulating rare events, can help train ML models to better detect and analyze actual astronomical observations, enhancing the accuracy of object detection and characterization in space.
+
 ![Generate light curves and save it with HDF5](./assets/generate-light-curves-and-save-it-with-hdf5.png)
 
 # Playground
